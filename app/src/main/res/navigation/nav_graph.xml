@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mainActivity">
+
+    <activity
+        android:id="@+id/mainActivity"
+        android:name="com.example.onlineshoppingapp.LoginActivity"
+        android:label="activity_main"
+        tools:layout="@layout/activity_login" />
+    <activity
+        android:id="@+id/registerActivity"
+        android:name="com.example.onlineshoppingapp.SignupActivity"
+        android:label="activity_register"
+        tools:layout="@layout/activity_signup" />
+    <activity
+        android:id="@+id/homeActivity"
+        android:name="com.example.onlineshoppingapp.HomeActivity"
+        android:label="activity_home"
+        tools:layout="@layout/activity_home" />
+    <activity
+        android:id="@+id/productsActivity"
+        android:name="com.example.onlineshoppingapp.ProductActivity"
+        android:label="activity_products"
+        tools:layout="@layout/activity_product" />
+    <activity
+        android:id="@+id/profileActivity"
+        android:name="com.example.onlineshoppingapp.ProfileActivity"
+        android:label="activity_profile"
+        tools:layout="@layout/activity_profile" />
+
+</navigation>
