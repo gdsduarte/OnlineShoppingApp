@@ -21,6 +21,13 @@ object AppCart {
         cart.products.find { it.productId == productId }?.quantity = newQuantity
     }
 
+    fun updateCartItem(modifiedCartItem: CartItem) {
+        val cartItemIndex = cart.products.indexOfFirst { it.productId == modifiedCartItem.productId }
+        if (cartItemIndex != -1) {
+            cart.products[cartItemIndex] = modifiedCartItem
+        }
+    }
+
     fun updateProductQuantity(productId: Int, newProductQuantity: Int) {
         cart.products.find { it.productId == productId }?.productQuantity = newProductQuantity
     }

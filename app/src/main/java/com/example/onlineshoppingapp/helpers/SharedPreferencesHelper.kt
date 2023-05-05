@@ -3,8 +3,6 @@ package com.example.onlineshoppingapp.helpers
 import android.content.Context
 import android.content.SharedPreferences
 import com.example.onlineshoppingapp.models.Cart
-import com.example.onlineshoppingapp.models.Token
-import com.example.onlineshoppingapp.models.User
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -14,33 +12,15 @@ class SharedPreferencesHelper(context: Context) {
         context.getSharedPreferences("sharedPrefs", Context.MODE_PRIVATE)
     private val gson = Gson()
 
-    fun saveUser(user: User) {
+    fun saveUserToken(token: String) {
         sharedPreferences.edit().apply {
-            putString("USER", user.toString())
-            apply()
-        }
-    }
-
-    fun saveUserToken(token: Token?) {
-        sharedPreferences.edit().apply {
-            putString("USER_TOKEN", token.toString())
+            putString("USER_TOKEN", token)
             apply()
         }
     }
 
     fun getUserToken(): String? {
         return sharedPreferences.getString("USER_TOKEN", null)
-    }
-
-    fun clearUserToken() {
-        sharedPreferences.edit().apply {
-            remove("USER_TOKEN")
-            apply()
-        }
-    }
-
-    fun getUserId(): Int? {
-        return sharedPreferences.getInt("USER_ID", -1)
     }
 
     fun saveUserId(userId: Int) {
@@ -50,11 +30,8 @@ class SharedPreferencesHelper(context: Context) {
         }
     }
 
-    fun clearUserId() {
-        sharedPreferences.edit().apply {
-            remove("USER_ID")
-            apply()
-        }
+    fun getUserId(): Int? {
+        return sharedPreferences.getInt("USER_ID", -1)
     }
 
     fun saveCart(cart: Cart) {
@@ -89,10 +66,6 @@ class SharedPreferencesHelper(context: Context) {
         }
     }
 
-    fun getProductQuantity(productId: Int): Int {
-        return sharedPreferences.getInt("PRODUCT_QUANTITY_$productId", 1)
-    }
-
     fun savePlacedOrders(orders: List<Cart>) {
         val jsonString = Gson().toJson(orders)
         sharedPreferences.edit().putString("placed_orders", jsonString).apply()
@@ -104,13 +77,9 @@ class SharedPreferencesHelper(context: Context) {
         return Gson().fromJson(jsonString, type)
     }
 
-    fun clearPlacedOrders() {
-        sharedPreferences.edit().apply {
-            remove("placed_orders")
-            apply()
-        }
+    fun clearAll() {
+        sharedPreferences.edit().clear().apply()
     }
-
 
     companion object {
         private var INSTANCE: SharedPreferencesHelper? = null
@@ -122,5 +91,4 @@ class SharedPreferencesHelper(context: Context) {
             return INSTANCE!!
         }
     }
-
 }

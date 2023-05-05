@@ -4,32 +4,34 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.onlineshoppingapp.adapters.CategoryAdapter
+import com.example.onlineshoppingapp.helpers.FakeStoreApiClient
 import com.example.onlineshoppingapp.helpers.SharedPreferencesHelper
 import com.example.onlineshoppingapp.models.Category
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
-import okio.IOException
-import org.json.JSONArray
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+    private lateinit var fakeStoreApiClient: FakeStoreApiClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
+        // Initialize shared preferences helper and fake store api client
         sharedPreferencesHelper = SharedPreferencesHelper(this)
+        fakeStoreApiClient = FakeStoreApiClient()
 
+        // Setup bottom navigation view
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavView)
-
         bottomNavigationView.selectedItemId = R.id.home
         bottomNavigationView.setOnItemSelectedListener { item: MenuItem ->
             when (item.itemId) {
@@ -61,11 +63,7 @@ class HomeActivity : AppCompatActivity() {
         fetchCategories()
     }
 
-    override fun onResume() {
-        super.onResume()
-        checkUserToken()
-    }
-
+    // Check if user token is present in shared preferences
     private fun checkUserToken() {
         val token = sharedPreferencesHelper.getUserToken()
         if (token == null) {
@@ -75,44 +73,40 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    // Fetch categories from fake store api
     private fun fetchCategories() {
-        val request = Request.Builder()
-            .url("https://fakestoreapi.com/products/categories")
-            .get()
-            .build()
-
-        val client = OkHttpClient()
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                // Handle error
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    val categoriesJsonArray = JSONArray(response.body?.string())
-                    val categories = mutableListOf<Category>()
-                    for (i in 0 until categoriesJsonArray.length()) {
-                        categories.add(Category(i, categoriesJsonArray.getString(i)))
-                    }
-
-                    runOnUiThread {
-                        setupCategoryRecyclerView(categories)
-                    }
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val categories = withContext(Dispatchers.IO) {
+                    fakeStoreApiClient.getProductCategories()
                 }
+                val categoryList = mutableListOf<Category>()
+                for (i in categories.indices) {
+                    categoryList.add(Category(i, categories[i]))
+                }
+                setupCategoryRecyclerView(categoryList)
+            } catch (e: Exception) {
+                Toast.makeText(this@HomeActivity, e.message, Toast.LENGTH_SHORT).show()
             }
-        })
+        }
     }
 
+    // Setup category recycler view
     private fun setupCategoryRecyclerView(categories: List<Category>) {
         val categoryRecyclerView: RecyclerView = findViewById(R.id.categoryRecyclerView)
         val categoryAdapter = CategoryAdapter(categories) { category ->
-            // Handle category click
             val intent = Intent(this@HomeActivity, ProductActivity::class.java)
             intent.putExtra("selectedCategory", category.name)
             startActivity(intent)
         }
 
-        categoryRecyclerView.layoutManager = GridLayoutManager(this, 2) // Change the number 2 to the number of columns you want
+        // Set layout manager and adapter for category recycler view
+        categoryRecyclerView.layoutManager = GridLayoutManager(this, 1, GridLayoutManager.VERTICAL, false)
         categoryRecyclerView.adapter = categoryAdapter
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkUserToken()
     }
 }

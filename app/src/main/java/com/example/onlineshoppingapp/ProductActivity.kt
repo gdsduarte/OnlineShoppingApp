@@ -4,18 +4,13 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.Spinner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.onlineshoppingapp.adapters.ProductAdapter
 import com.example.onlineshoppingapp.helpers.AppCart
 import com.example.onlineshoppingapp.helpers.FakeStoreApiClient
 import com.example.onlineshoppingapp.helpers.SharedPreferencesHelper
-import com.example.onlineshoppingapp.models.Cart
 import com.example.onlineshoppingapp.models.Product
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.GlobalScope
@@ -32,11 +27,12 @@ class ProductActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_product)
 
+        // Initialize the API client and shared preferences helper
         fakeStoreApiClient = FakeStoreApiClient()
         sharedPreferencesHelper = SharedPreferencesHelper(this)
 
+        // Set the bottom navigation view
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavView)
-
         bottomNavigationView.selectedItemId = R.id.shop
         bottomNavigationView.setOnItemSelectedListener { item: MenuItem ->
             when (item.itemId) {
@@ -67,6 +63,7 @@ class ProductActivity : AppCompatActivity() {
 
         setupCategoryButtons()
 
+        // Check if a category was selected from the home activity
         val selectedCategory = intent.getStringExtra("selectedCategory")
         if (selectedCategory != null) {
             onCategoryButtonClick(selectedCategory)
@@ -76,6 +73,7 @@ class ProductActivity : AppCompatActivity() {
 
     }
 
+    //
     private fun setupCategoryButtons() {
         val allButton: Button = findViewById(R.id.allButton)
         val electronicsButton: Button = findViewById(R.id.electronicsButton)
@@ -83,6 +81,7 @@ class ProductActivity : AppCompatActivity() {
         val mensClothingButton: Button = findViewById(R.id.mensClothingButton)
         val womensClothingButton: Button = findViewById(R.id.womensClothingButton)
 
+        // Set the on click listeners for the category buttons
         allButton.setOnClickListener { onCategoryButtonClick("All") }
         electronicsButton.setOnClickListener { onCategoryButtonClick("electronics") }
         jewelryButton.setOnClickListener { onCategoryButtonClick("jewelery") }
@@ -94,6 +93,7 @@ class ProductActivity : AppCompatActivity() {
         selectedCategoryId = allButton.id
     }
 
+    // Function to handle the category button clicks
     private fun onCategoryButtonClick(category: String) {
         val allButton: Button = findViewById(R.id.allButton)
         val electronicsButton: Button = findViewById(R.id.electronicsButton)
@@ -125,6 +125,7 @@ class ProductActivity : AppCompatActivity() {
         }
     }
 
+    // Function to handle the product item clicks and navigate to the product description activity
     private fun onItemClick(selectedProduct: Product) {
         val intent = Intent(this, ProductDescriptionActivity::class.java)
         intent.putExtra("product", selectedProduct)
@@ -132,6 +133,7 @@ class ProductActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+    // Function to fetch all products from the API
     private fun fetchProducts() {
         GlobalScope.launch {
             val products = fakeStoreApiClient.getProducts()
@@ -141,6 +143,7 @@ class ProductActivity : AppCompatActivity() {
         }
     }
 
+    // Function to fetch products by category from the API
     private fun fetchProductsByCategory(category: String) {
         GlobalScope.launch {
             val products = fakeStoreApiClient.getProductsByCategory(category)
@@ -150,6 +153,7 @@ class ProductActivity : AppCompatActivity() {
         }
     }
 
+    // Function to setup the product recycler view with the products
     private fun setupProductRecyclerView(products: List<Product>) {
         val productRecyclerView: RecyclerView = findViewById(R.id.productRecyclerView)
         val productAdapter = ProductAdapter(products) { product ->
@@ -158,5 +162,4 @@ class ProductActivity : AppCompatActivity() {
         productRecyclerView.layoutManager = LinearLayoutManager(this)
         productRecyclerView.adapter = productAdapter
     }
-
 }

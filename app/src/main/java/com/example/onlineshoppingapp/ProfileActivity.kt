@@ -21,10 +21,9 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-
 
 class ProfileActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -40,9 +39,11 @@ class ProfileActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
+        // Initialize shared preferences helper and fake store api client
         sharedPreferencesHelper = SharedPreferencesHelper(this)
         fakeStoreApiClient = FakeStoreApiClient()
 
+        // Initialize views and buttons
         profileName = findViewById(R.id.profile_name)
         profileEmail = findViewById(R.id.profile_email)
         profileUsername = findViewById(R.id.profile_username)
@@ -50,8 +51,8 @@ class ProfileActivity : AppCompatActivity(), OnMapReadyCallback {
         val profileImage = findViewById<ImageView>(R.id.profile_image)
         val logoutButton = findViewById<Button>(R.id.logout_button)
 
+        // Setup bottom navigation view
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavView)
-
         bottomNavigationView.selectedItemId = R.id.profile
         bottomNavigationView.setOnItemSelectedListener { item: MenuItem ->
             when (item.itemId) {
@@ -89,10 +90,11 @@ class ProfileActivity : AppCompatActivity(), OnMapReadyCallback {
         // Set user profile data
         val userId = sharedPreferencesHelper.getUserId()
 
-        CoroutineScope(Dispatchers.IO).launch {
+        // Get user data from the fake store api
+        GlobalScope.launch(Dispatchers.IO) {
             val user = fakeStoreApiClient.getUser(userId!!)
             if (user != null) {
-                CoroutineScope(Dispatchers.Main).launch {
+                runOnUiThread {
                     setUserProfileData(user)
                 }
             } else {
@@ -100,9 +102,11 @@ class ProfileActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        // Setup about app button and container
         val aboutAppButton: Button = findViewById(R.id.about_app_button)
         val container: FrameLayout = findViewById(R.id.container)
 
+        // Hide the container when the activity is created
         aboutAppButton.setOnClickListener {
             container.visibility = View.VISIBLE
             supportFragmentManager.beginTransaction()
@@ -111,10 +115,10 @@ class ProfileActivity : AppCompatActivity(), OnMapReadyCallback {
                 .commit()
         }
 
+        // Logout button
         logoutButton.setOnClickListener {
-            // Clear the stored user ID/token here
-            sharedPreferencesHelper.clearUserId()
-            sharedPreferencesHelper.clearUserToken()
+            // Clear the stored user data
+            sharedPreferencesHelper.clearAll()
 
             startActivity(Intent(applicationContext, LoginActivity::class.java))
             finish()
@@ -126,19 +130,24 @@ class ProfileActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
     }
 
+    // Map callback function
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
     }
 
+    // Set user profile data function
     private fun setUserProfileData(user: User) {
+
+        // Set user profile data
         profileName.text = "${user.name.firstname} ${user.name.lastname}"
         profileEmail.text = user.email
         profileUsername.text = user.username
         profilePhone.text = user.phone
 
-        val latitude = user.address.geolocation.lat.toDouble()
-        val longitude = user.address.geolocation.long.toDouble()
-        val userLocation = LatLng(latitude, longitude)
+        // Add user location marker to the map
+        val latitude = user.address.geolocation.lat
+        val longitude = user.address.geolocation.long
+        val userLocation = LatLng(latitude.toDouble(), longitude.toDouble())
         mMap.addMarker(MarkerOptions().position(userLocation).title("User's Location"))
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
     }

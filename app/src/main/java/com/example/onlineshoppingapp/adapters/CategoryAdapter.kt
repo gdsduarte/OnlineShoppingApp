@@ -3,6 +3,7 @@ package com.example.onlineshoppingapp.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.onlineshoppingapp.R
@@ -15,8 +16,26 @@ class CategoryAdapter(
 
     inner class CategoryViewHolder(private val view: View) : RecyclerView.ViewHolder(view) {
         fun bind(category: Category) {
-            view.findViewById<TextView>(R.id.categoryName).text = category.name
+            val categoryImage = view.findViewById<ImageView>(R.id.categoryImage)
+            val categoryName = view.findViewById<TextView>(R.id.categoryName)
+
+            // Set the image resource based on the category
+            categoryImage.setImageResource(getCategoryImageResource(category.name))
+
+            // Set the category name text
+            categoryName.text = category.name
+
             view.setOnClickListener { onCategoryClickListener(category) }
+        }
+    }
+
+    private fun getCategoryImageResource(categoryName: String): Int {
+        return when (categoryName) {
+            "electronics" -> R.drawable.electronics_image
+            "jewelery" -> R.drawable.jewelery_image
+            "men's clothing" -> R.drawable.mens_clothing_image
+            "women's clothing" -> R.drawable.womens_clothing_image
+            else -> R.drawable.logo
         }
     }
 

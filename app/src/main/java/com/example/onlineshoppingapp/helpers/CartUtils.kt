@@ -12,7 +12,6 @@ object CartUtils {
         val carts = userId?.let { fakeStoreApiClient.getCartItems(it) } ?: emptyList()
         val products = fakeStoreApiClient.getProducts()
 
-        // Map cart items to carts with actual products
         carts.map { cart ->
             Cart(
                 id = cart.id,

@@ -1,6 +1,7 @@
 package com.example.onlineshoppingapp
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -13,6 +14,7 @@ import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
@@ -28,9 +30,7 @@ import com.example.onlineshoppingapp.models.CartItem
 import com.example.onlineshoppingapp.models.Product
 import com.example.onlineshoppingapp.models.Rating
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -38,6 +38,7 @@ import java.util.Locale
 
 class CartActivity : AppCompatActivity() {
 
+    private val cartItems = mutableListOf<CartItem>()
     private lateinit var cart: Cart
     private var carts: MutableList<Cart>? = null
     private val sharedPreferencesHelper by lazy { SharedPreferencesHelper.getInstance(this) }
@@ -50,15 +51,17 @@ class CartActivity : AppCompatActivity() {
         const val NOTIFICATION_ID = 1
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cart)
 
+        // Initialize fake store api client
         fakeStoreApiClient = FakeStoreApiClient()
         createNotificationChannel()
 
+        // Setup bottom navigation view
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavView)
-
         bottomNavigationView.selectedItemId = R.id.cart
         bottomNavigationView.setOnItemSelectedListener { item: MenuItem ->
             when (item.itemId) {
@@ -87,6 +90,7 @@ class CartActivity : AppCompatActivity() {
             }
         }
 
+        // Get the cart object from SharedPreferences
         AppCart.cart = sharedPreferencesHelper.getCart() ?: Cart(id = 0, userId = 0, date = "", products = mutableListOf())
 
         // Get the cart object from the intent
@@ -108,7 +112,7 @@ class CartActivity : AppCompatActivity() {
             totalCost = it.getDouble("totalCost")
         }
 
-        val cartItems = mutableListOf<CartItem>()
+        // Create a list of CartItem objects
         if (::selectedProduct.isInitialized) {
             cartItems.add(CartItem(selectedProduct.id, selectedQuantity, selectedProduct))
         }
@@ -127,6 +131,7 @@ class CartActivity : AppCompatActivity() {
         setupCartRecyclerView(cartItems)
     }
 
+    // Calculate the total value
     private fun calculateTotal(cartItems: List<CartItem>): Double {
         var total = 0.0
         cartItems.forEach { cartItem ->
@@ -138,6 +143,7 @@ class CartActivity : AppCompatActivity() {
     private fun placeOrder() {
         val orderItems = AppCart.cart.products
 
+        // Check if the cart is empty
         if (orderItems.isEmpty()) {
             Toast.makeText(this, "The cart is empty. Cannot place an order.", Toast.LENGTH_LONG).show()
             return
@@ -146,13 +152,11 @@ class CartActivity : AppCompatActivity() {
         // Save the cart to SharedPreferences
         sharedPreferencesHelper.clearCart()
 
-        // Clear the cart
-        AppCart.clearCart()
-
         // Fetch carts and create a new Cart object for the placed order
         lifecycleScope.launch {
             val fetchedCarts = CartUtils.getCarts(sharedPreferencesHelper, fakeStoreApiClient)
 
+            // Save the fetched carts to the SharedPreferences
             carts = fetchedCarts
             val placedOrders = sharedPreferencesHelper.loadPlacedOrders().toMutableList()
             val apiCarts = CartUtils.getCarts(sharedPreferencesHelper, fakeStoreApiClient)
@@ -163,6 +167,7 @@ class CartActivity : AppCompatActivity() {
                 addAll(placedOrders)
             }
 
+            // Create a new Cart object for the placed order
             val placedOrder = Cart(
                 id = allCarts.size + 1,
                 userId = sharedPreferencesHelper.getUserId() ?: 0,
@@ -177,6 +182,9 @@ class CartActivity : AppCompatActivity() {
             // Show order notification
             showOrderNotification()
 
+            // Clear the cart
+            AppCart.clearCart()
+
             // Pass the order items to the OrderActivity
             val intent = Intent(this@CartActivity, OrderActivity::class.java)
             intent.putExtra("orderItems", orderItems as Serializable)
@@ -184,24 +192,28 @@ class CartActivity : AppCompatActivity() {
         }
     }
 
+    // Recycler view setup for the cart
     private fun setupCartRecyclerView(cartItems: List<CartItem>) {
         val cartRecyclerView: RecyclerView = findViewById(R.id.cartRecyclerView)
         val totalCostTextView: TextView = findViewById(R.id.totalPriceTextView)
 
-        val cartAdapter = CartAdapter(cartItems) { cartItem, newProductQuantity ->
+        val cartAdapter = CartAdapter(cartItems, { cartItem, newProductQuantity ->
             // Handle the quantity change here
             AppCart.updateProductQuantity(cartItem.productId, newProductQuantity)
 
             // Update the total value
             val updatedTotal = calculateTotal(AppCart.cart.products)
             totalCostTextView.text = String.format("Total: $%.2f", updatedTotal)
-        }.also { adapter ->
+        }, modifyCartItemLauncher).also { adapter ->
             adapter.updateCartItems(AppCart.cart.products)
         }
 
         cartRecyclerView.layoutManager = LinearLayoutManager(this)
         cartRecyclerView.adapter = cartAdapter
     }
+
+
+    // Show a notification when the order is placed
     @SuppressLint("MissingPermission")
     private fun showOrderNotification() {
         Log.d("CartActivity", "showOrderNotification called")
@@ -215,6 +227,7 @@ class CartActivity : AppCompatActivity() {
         notificationManager.notify(NOTIFICATION_ID, builder.build())
     }
 
+    // Create a notification channel
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "Sample Channel Category"
@@ -228,6 +241,22 @@ class CartActivity : AppCompatActivity() {
             notificationManager.createNotificationChannel(channel)
         }
     }
+
+    private val modifyCartItemLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                result.data?.extras?.let {
+                    val modifiedCartItem = it.getSerializable("modifiedCartItem") as CartItem
+                    AppCart.updateCartItem(modifiedCartItem)
+
+                    // Update the UI
+                    setupCartRecyclerView(AppCart.cart.products)
+                    val total = calculateTotal(AppCart.cart.products)
+                    val totalCostTextView: TextView = findViewById(R.id.totalPriceTextView)
+                    totalCostTextView.text = String.format("Total: $%.2f", total)
+                }
+            }
+        }
 
     override fun onResume() {
         super.onResume()

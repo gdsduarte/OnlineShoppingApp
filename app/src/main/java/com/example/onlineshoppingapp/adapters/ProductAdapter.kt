@@ -15,6 +15,8 @@ class ProductAdapter(private val products: List<Product>, private val onProductC
 
     class ProductViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView = view.findViewById(R.id.product_title)
+        val price: TextView = view.findViewById(R.id.product_price)
+        val rating: TextView = view.findViewById(R.id.product_rating)
         val imageView: ImageView = view.findViewById(R.id.product_image)
     }
 
@@ -26,9 +28,9 @@ class ProductAdapter(private val products: List<Product>, private val onProductC
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
         val product = products[position]
         holder.title.text = product.title
+        holder.price.text = String.format("Price: €%.2f", product.price)
+        holder.rating.text = String.format("Rating: %.1f★ (%d)", product.rating.rate, product.rating.count)
 
-        // Load the image using an image loading library such as Glide or Picasso
-        // For example, using Picasso:
         Picasso.get()
             .load(product.image)
             .into(holder.imageView)

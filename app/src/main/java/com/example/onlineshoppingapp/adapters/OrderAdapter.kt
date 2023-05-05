@@ -33,10 +33,9 @@ class OrderAdapter(private val carts: List<Cart>) : RecyclerView.Adapter<OrderAd
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val cartIdTextView: TextView = itemView.findViewById(R.id.cartIdTextView)
         private val cartDateTextView: TextView = itemView.findViewById(R.id.cartDateTextView)
-        val cartItemsRecyclerView: RecyclerView = itemView.findViewById(R.id.cartItemsRecyclerView)
+        private val cartItemsRecyclerView: RecyclerView = itemView.findViewById(R.id.cartItemsRecyclerView)
         private val totalAmountTextView: TextView = itemView.findViewById(R.id.totalAmountTextView)
         private val expandRetractButton: Button = itemView.findViewById(R.id.expandRetractButton)
-
 
         fun bind(cart: Cart) {
             cartIdTextView.text = cart.id.toString()
@@ -61,11 +60,8 @@ class OrderAdapter(private val carts: List<Cart>) : RecyclerView.Adapter<OrderAd
                 notifyItemChanged(adapterPosition)
             }
         }
-
-
     }
 
-    // Implement the onProductClick method
     override fun onProductClick(product: Product, context: Context) {
         val intent = Intent(context, ProductDescriptionActivity::class.java)
         intent.putExtra("product", product)

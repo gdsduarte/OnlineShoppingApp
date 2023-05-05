@@ -41,13 +41,11 @@ class OrderItemsAdapter(
             productQuantityTextView.text = "Quantity: ${cartItem.quantity}"
             productPriceTextView.text = "Price: ${cartItem.product?.price}"
 
-            // Load the image using Picasso
             cartItem.product?.image?.let {
                 Picasso.get()
                     .load(it)
                     .into(productImageView)
             }
-
 
         }
 

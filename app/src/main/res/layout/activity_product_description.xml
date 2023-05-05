@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     android:fillViewport="true"
     tools:context=".ProductDescriptionActivity">
 
@@ -12,12 +13,24 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
+        <Button
+            android:id="@+id/product_backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/back"
+            android:textColor="@color/yellow"
+            android:backgroundTint="@android:color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <ImageView
             android:id="@+id/product_image"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintTop_toTopOf="parent"
+            android:contentDescription="@string/logo"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_backButton"
             tools:src="@tools:sample/backgrounds/scenic" />
 
         <TextView
@@ -26,6 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:textAppearance="?attr/textAppearanceHeadline6"
+            app:layout_constraintStart_toStartOf="@+id/product_image"
             app:layout_constraintTop_toBottomOf="@id/product_image"
             tools:text="Product Title" />
 
@@ -35,8 +49,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:textAppearance="?attr/textAppearanceSubtitle1"
+            app:layout_constraintStart_toStartOf="@+id/product_title"
             app:layout_constraintTop_toBottomOf="@id/product_title"
-            tools:text="Price: $99.99" />
+            tools:text="Price" />
 
         <TextView
             android:id="@+id/product_description"
@@ -44,8 +59,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:textAppearance="?attr/textAppearanceBody1"
+            app:layout_constraintStart_toStartOf="@+id/product_price"
             app:layout_constraintTop_toBottomOf="@id/product_price"
-            tools:text="Product description goes here. This is just a sample description text." />
+            tools:text="Product description" />
 
         <TextView
             android:id="@+id/product_category"
@@ -53,8 +69,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:textAppearance="?attr/textAppearanceSubtitle2"
+            app:layout_constraintStart_toStartOf="@+id/product_description"
             app:layout_constraintTop_toBottomOf="@id/product_description"
-            tools:text="Category: Electronics" />
+            tools:text="Category" />
 
         <TextView
             android:id="@+id/product_rating"
@@ -62,8 +79,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:textAppearance="?attr/textAppearanceSubtitle2"
+            app:layout_constraintStart_toStartOf="@+id/product_category"
             app:layout_constraintTop_toBottomOf="@id/product_category"
-            tools:text="Rating: 4.5 (100)" />
+            tools:text="Rating" />
 
         <LinearLayout
             android:id="@+id/quantityLayout"
@@ -71,14 +89,16 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:orientation="horizontal"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/product_rating"
             app:layout_constraintTop_toBottomOf="@+id/product_rating">
 
             <Button
                 android:id="@+id/decreaseQuantityButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="-" />
+                android:textColor="@color/yellow"
+                android:backgroundTint="@android:color/black"
+                android:text="@string/minus" />
 
             <TextView
                 android:id="@+id/quantityTextView"
@@ -86,14 +106,16 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
-                android:text="1"
+                android:text=""
                 android:textSize="18sp" />
 
             <Button
                 android:id="@+id/increaseQuantityButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="+" />
+                android:textColor="@color/yellow"
+                android:backgroundTint="@android:color/black"
+                android:text="@string/plus" />
 
         </LinearLayout>
 
@@ -101,8 +123,9 @@
             android:id="@+id/addToCart"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add to Cart"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/add_to_cart"
+            android:textColor="@color/yellow"
+            android:backgroundTint="@android:color/black"            app:layout_constraintEnd_toEndOf="@+id/product_rating"
             app:layout_constraintTop_toTopOf="@id/quantityLayout" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
